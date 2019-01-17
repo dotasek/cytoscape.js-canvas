@@ -1,93 +1,95 @@
-(function() {
+"use strict";
+
+(function () {
 	// registers the extension on a cytoscape lib ref
-	const register = function(cytoscape) {
+	var register = function register(cytoscape) {
 		if (!cytoscape) {
 			return;
 		}
 
-		const cyCanvas = function(args) {
-			const cy = this;
-			const container = cy.container();
+		var cyCanvas = function cyCanvas(args) {
+			var cy = this;
+			var container = cy.container();
 
-			const canvas = document.createElement("canvas");
+			var canvas = document.createElement("canvas");
 
 			container.appendChild(canvas);
 
-			const defaults = {
+			var defaults = {
 				zIndex: 1,
-				pixelRatio: "auto",
+				pixelRatio: "auto"
 			};
 
-			const options = Object.assign({}, defaults, args);
+			var options = Object.assign({}, defaults, args);
 
 			if (options.pixelRatio === "auto") {
 				options.pixelRatio = window.devicePixelRatio || 1;
 			}
 
 			function resize() {
-				const width = container.offsetWidth;
-				const height = container.offsetHeight;
+				var width = container.offsetWidth;
+				var height = container.offsetHeight;
 
-				const canvasWidth = width * options.pixelRatio;
-				const canvasHeight = height * options.pixelRatio;
+				var canvasWidth = width * options.pixelRatio;
+				var canvasHeight = height * options.pixelRatio;
 
 				canvas.width = canvasWidth;
 				canvas.height = canvasHeight;
 
-				canvas.style.width = `${width}px`;
-				canvas.style.height = `${height}px`;
+				canvas.style.width = width + "px";
+				canvas.style.height = height + "px";
 
 				cy.trigger("cyCanvas.resize");
 			}
 
-			cy.on("resize", () => {
+			cy.on("resize", function () {
 				resize();
 			});
 
-			canvas.setAttribute(
-				"style",
-				`position:absolute; top:0; left:0; z-index:${options.zIndex};`,
-			);
+			canvas.setAttribute("style", "position:absolute; top:0; left:0; z-index:" + options.zIndex + ";");
 
 			resize();
 
 			return {
 				/**
-				 * @return {Canvas} The generated canvas
-				 */
-				getCanvas() {
+     * @return {Canvas} The generated canvas
+     */
+				getCanvas: function getCanvas() {
 					return canvas;
 				},
+
 				/**
-				 * Helper: Clear the canvas
-				 * @param {CanvasRenderingContext2D} ctx
-				 */
-				clear(ctx) {
-					const width = cy.width();
-					const height = cy.height();
+     * Helper: Clear the canvas
+     * @param {CanvasRenderingContext2D} ctx
+     */
+				clear: function clear(ctx) {
+					var width = cy.width();
+					var height = cy.height();
 					ctx.save();
 					ctx.setTransform(1, 0, 0, 1, 0, 0);
 					ctx.clearRect(0, 0, width * options.pixelRatio, height * options.pixelRatio);
 					ctx.restore();
 				},
+
 				/**
-				 * Helper: Reset the context transform to an identity matrix
-				 * @param {CanvasRenderingContext2D} ctx
-				 */
-				resetTransform(ctx) {
+     * Helper: Reset the context transform to an identity matrix
+     * @param {CanvasRenderingContext2D} ctx
+     */
+				resetTransform: function resetTransform(ctx) {
 					ctx.setTransform(1, 0, 0, 1, 0, 0);
 				},
+
 				/**
-				 * Helper: Set the context transform to match Cystoscape's zoom & pan
-				 * @param {CanvasRenderingContext2D} ctx
-				 */
-				setTransform(ctx) {
-					const pan = cy.pan();
-					const zoom = cy.zoom();
+     * Helper: Set the context transform to match Cystoscape's zoom & pan
+     * @param {CanvasRenderingContext2D} ctx
+     */
+				setTransform: function setTransform(ctx) {
+					var pan = cy.pan();
+					var zoom = cy.zoom();
 					ctx.setTransform(1, 0, 0, 1, 0, 0);
 					ctx.translate(pan.x * options.pixelRatio, pan.y * options.pixelRatio);
 					ctx.scale(zoom * options.pixelRatio, zoom * options.pixelRatio);
-				},
+				}
 			};
 		};
 
@@ -96,15 +98,12 @@
 
 	if (typeof module !== "undefined" && module.exports) {
 		// expose as a commonjs module
-		module.exports = function(cytoscape) {
+		module.exports = function (cytoscape) {
 			register(cytoscape);
 		};
 	}
 
-	if (typeof define !== "undefined" && define.amd) {
-		// expose as an amd/requirejs module
-		define("cytoscape-canvas", () => register);
-	}
+
 
 	if (typeof cytoscape !== "undefined") {
 		// expose to global cytoscape (i.e. window.cytoscape)
